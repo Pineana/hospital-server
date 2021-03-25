@@ -9,10 +9,10 @@ import (
 var GlobalConfig Server
 
 type Server struct {
-	Mysql Mysql `yaml:"mysql"`
+	Mysql MysqlConf `yaml:"mysql"`
 }
 
-type Mysql struct {
+type MysqlConf struct {
 	Username string `yaml:"username"`
 	Password string `yaml:"password"`
 	DBName   string `yaml:"dbname"`

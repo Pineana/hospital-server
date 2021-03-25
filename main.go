@@ -4,13 +4,14 @@ import (
 	"github.com/gin-gonic/gin"
 	"hospital-admin/config"
 	"hospital-admin/http"
+	"hospital-admin/model"
 	"hospital-admin/usecase"
 )
 
 func main() {
 	engine := gin.Default()
-	db := config.InitMysql(config.GlobalConfig.Mysql)
-
+	db := config.InitGormMysql(config.GlobalConfig.Mysql)
+	db.AutoMigrate(&model.User{}, model.Doctor{}, model.Patient{})
 	usecase := usecase.NewUseCase(db)
 	handle := http.NewHandle(usecase)
 	// 初始化路由

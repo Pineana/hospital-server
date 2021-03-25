@@ -1,5 +1,7 @@
 package http
 
+import "hospital-admin/model"
+
 func getBasicResp(data interface{}) BasicResp {
 	return BasicResp{
 		ErrCode: 1000,
@@ -9,7 +11,7 @@ func getBasicResp(data interface{}) BasicResp {
 }
 
 type BasicResp struct {
-	ErrCode int64       `json:"err_code"`
+	ErrCode uint        `json:"err_code"`
 	Msg     string      `json:"msg"`
 	Data    interface{} `json:"data"`
 }
@@ -26,18 +28,36 @@ type UserLoginResp struct {
 type UserRegisterReq struct {
 	Username  string `json:"username""`
 	Password  string `json:"password"`
-	UserType  int64  `json:"user_type"`
-	PatientID int64  `json:"patient_id"`
-	DoctorID  int64  `json:"doctor_id"`
+	UserType  uint8  `json:"user_type"`
+	PatientID uint   `json:"patient_id"`
+	DoctorID  uint   `json:"doctor_id"`
 }
 
 type UserRegisterResp struct {
 }
 
+type GetUserListReq struct {
+	PageNum  int `json:"page_num"`
+	PageSize int `json:"page_size"`
+}
+
+type GetUserListResp struct {
+	PageNum   int           `json:"page_num"`
+	PageSize  int           `json:"page_size"`
+	TotalNum  int           `json:"total_num"`
+	TotalSize int           `json:"total_size"`
+	UserList  []*model.User `json:"user_list"`
+}
+
 type GetPatientListReq struct {
-	PageNum  int64 `json:"page_num"`
-	PageSize int64 `json:"page_size"`
+	PageNum  int `json:"page_num"`
+	PageSize int `json:"page_size"`
 }
 
 type GetPatientListResp struct {
+	PageNum     int              `json:"page_num"`
+	PageSize    int              `json:"page_size"`
+	TotalNum    int              `json:"total_num"`
+	TotalSize   int              `json:"total_size"`
+	PatientList []*model.Patient `json:"patient_list"`
 }

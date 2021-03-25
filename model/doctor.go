@@ -1,14 +1,10 @@
 package model
 
-import "time"
-
 type Doctor struct {
-	ID int64 `db:"id"`
-	Name string `db:"name"`
-	Year int64	`db:"year"`
-	DepartmentID int64 `db:"department_id"`
-	Phone int64 `db:"phone"`
-	Sex bool `db:"sex"`
-	CreateAt time.Time `db:"create_at"`
-	UpdateAt	time.Time `db:"update_at"`
+	Id           int    `gorm:"column:id;primary_key" json:"id"`
+	Name         string `gorm:"column:name;NOT NULL" json:"name"`
+	Year         int    `gorm:"column:year;NOT NULL" json:"year"`
+	DepartmentId int    `gorm:"column:department_id;NOT NULL" json:"department_id"`
+	Phone        string `gorm:"column:phone;NOT NULL" json:"phone"`
+	Sex          int    `gorm:"column:sex;NOT NULL" json:"sex"`
 }
