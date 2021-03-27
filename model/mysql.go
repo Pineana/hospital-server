@@ -77,8 +77,8 @@ func (r *repository) UpdatePatientByID(patient Patient) (err error) {
 	return
 }
 
-func (r *repository) QueryPatientByName(name string) (patient *Patient, err error) {
-	result := r.DB.Where("name like ?", "%"+name+"%").First(&patient)
+func (r *repository) QueryPatientByName(name string) (patients []*Patient, err error) {
+	result := r.DB.Where("name like ?", "%"+name+"%").Find(&patients)
 	if result.Error != nil {
 		fmt.Println("QueryPatientByName", err)
 		return nil, err
@@ -88,7 +88,7 @@ func (r *repository) QueryPatientByName(name string) (patient *Patient, err erro
 
 func (r *repository) QueryPatientList(page int, size int) (patients []*Patient, err error) {
 	patients = make([]*Patient, 0)
-	result := r.DB.Find(&patients).Limit(size).Offset(page * size)
+	result := r.DB.Limit(size).Offset((page - 1) * size).Find(&patients)
 	if result.Error != nil {
 		return nil, err
 	}
@@ -131,8 +131,8 @@ func (r *repository) UpdateDoctorByID(doctor Doctor) (err error) {
 	return
 }
 
-func (r *repository) QueryDoctorByName(name string) (doctor *Doctor, err error) {
-	result := r.DB.Where("name like ?", "%"+name+"%").First(&doctor)
+func (r *repository) QueryDoctorByName(name string, page, size int) (doctors []*Doctor, err error) {
+	result := r.DB.Where("name like ?", "%"+name+"%").Limit(size).Offset((page - 1) * size).Find(&doctors)
 	if result.Error != nil {
 		fmt.Println("QueryDoctorByName", err)
 		return nil, err
@@ -140,9 +140,18 @@ func (r *repository) QueryDoctorByName(name string) (doctor *Doctor, err error) 
 	return
 }
 
+func (r *repository) CountDoctorByName(name string, size int) (totalNum int, totalPage int) {
+	var count int64
+	result := r.DB.Where("name like ?", "%"+name+"%").Find(&Doctor{}).Count(&count)
+	if result.Error != nil {
+		return 0, 0
+	}
+	return int(count), int(count)/size + 1
+}
+
 func (r *repository) QueryDoctorList(page int, size int) (doctors []*Doctor, err error) {
 	doctors = make([]*Doctor, 0)
-	result := r.DB.Find(&doctors).Limit(size).Offset(page * size)
+	result := r.DB.Limit(size).Offset((page - 1) * size).Find(&doctors)
 	if result.Error != nil {
 		return nil, err
 	}
@@ -194,10 +203,10 @@ func (r *repository) QueryRegisterByID(id int64) (register *Register, err error)
 	return
 }
 
-func (r *repository) QueryRegisterList(page int, size int) (registers []*Register, err error) {
-	registers = make([]*Register, 0)
-	result := r.DB.Find(&registers).Limit(size).Offset(page * size)
-	if result.Error != nil {
+func (r *repository) QueryRegisterList(page int, size int) (result []*RegisterResult, err error) {
+	result = make([]*RegisterResult, 0)
+	res := r.DB.Table("registers").Select("registers.id,patients.name as patient_name,patients.year as patient_year,patients.phone as patient_phone,patients.sex as patient_sex,price,CONCAT(doctors.name,'--',doctors.department) as doctor_name").Joins("LEFT JOIN patients ON patients.id = registers.patient_id").Joins("LEFT JOIN doctors ON doctors.id = registers.doctor_id").Limit(size).Offset((page - 1) * size).Scan(&result)
+	if res.Error != nil {
 		return nil, err
 	}
 	return
@@ -239,18 +248,27 @@ func (r *repository) UpdateDrugByID(drug Drug) (err error) {
 	return
 }
 
-func (r *repository) QueryDrugByName(name string) (drug *Drug, err error) {
-	result := r.DB.Where("name like ?", "%"+name+"%").First(&drug)
+func (r *repository) QueryDrugByName(name string, page, size int) (drug []*Drug, err error) {
+	result := r.DB.Where("name like ?", "%"+name+"%").Limit(size).Offset((page - 1) * size).Find(&drug)
 	if result.Error != nil {
-		fmt.Println("QueryDoctorByName", err)
+		fmt.Println("QueryDrugByName", err)
 		return nil, err
 	}
 	return
 }
 
+func (r *repository) CountDrugByName(name string, size int) (totalNum int, totalPage int) {
+	var count int64
+	result := r.DB.Where("name like ?", "%"+name+"%").Find(&Drug{}).Count(&count)
+	if result.Error != nil {
+		return 0, 0
+	}
+	return int(count), int(count)/size + 1
+}
+
 func (r *repository) QueryDrugList(page int, size int) (drugs []*Drug, err error) {
 	drugs = make([]*Drug, 0)
-	result := r.DB.Find(&drugs).Limit(size).Offset(page * size)
+	result := r.DB.Limit(size).Offset((page - 1) * size).Find(&drugs)
 	if result.Error != nil {
 		return nil, err
 	}

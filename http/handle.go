@@ -24,10 +24,12 @@ func (h *Handle) UserLogin(ctx *gin.Context) {
 	err := ctx.Bind(userLoginReq)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, getBasicResp(userLoginResp))
+		return
 	}
 	ok, err := h.UseCase.UserLogin(userLoginReq.Username, userLoginReq.Password)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, getBasicResp(userLoginResp))
+		return
 	}
 	if ok {
 		userLoginResp.IsAllow = true
@@ -60,7 +62,10 @@ func (h *Handle) UserRegister(ctx *gin.Context) {
 }
 
 func (h *Handle) GetPatientList(ctx *gin.Context) {
-	patientList, totalNum, totalPage, err := h.UseCase.GetPatientList(1, 10)
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	size, _ := strconv.Atoi(ctx.Query("size"))
+
+	patientList, totalNum, totalPage, err := h.UseCase.GetPatientList(page, size)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
@@ -77,6 +82,7 @@ func (h *Handle) AddPatient(ctx *gin.Context) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	fmt.Printf("%v", patient)
 	err = h.UseCase.AddPatient(patient)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
@@ -86,14 +92,14 @@ func (h *Handle) AddPatient(ctx *gin.Context) {
 }
 
 func (h *Handle) DeletePatient(ctx *gin.Context) {
-	patient := model.Patient{}
-	err := ctx.Bind(&patient)
-	if err != nil {
-		fmt.Println(err)
+	id, _ := strconv.Atoi(ctx.Query("id"))
+	patient := model.Patient{
+		Id: id,
 	}
-	err = h.UseCase.DeletePatient(patient)
+	err := h.UseCase.DeletePatient(patient)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
+		return
 	}
 	ctx.JSON(http.StatusOK, nil)
 }
@@ -124,14 +130,14 @@ func (h *Handle) GetDoctorList(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	size, _ := strconv.Atoi(ctx.Query("size"))
 
-	patientList, totalNum, totalPage, err := h.UseCase.GetDoctorList(page, size)
+	doctorList, totalNum, totalPage, err := h.UseCase.GetDoctorList(page, size)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
 	data := make(map[string]interface{}, 0)
 	data["totalNum"] = totalNum
 	data["totalPage"] = totalPage
-	data["patientList"] = patientList
+	data["doctorList"] = doctorList
 	ctx.JSON(http.StatusOK, getBasicResp(data))
 }
 
@@ -150,12 +156,11 @@ func (h *Handle) AddDoctor(ctx *gin.Context) {
 }
 
 func (h *Handle) DeleteDoctor(ctx *gin.Context) {
-	doctor := model.Doctor{}
-	err := ctx.Bind(&doctor)
-	if err != nil {
-		fmt.Println(err)
+	id, _ := strconv.Atoi(ctx.Query("id"))
+	doctor := model.Doctor{
+		Id: id,
 	}
-	err = h.UseCase.DeleteDoctor(doctor)
+	err := h.UseCase.DeleteDoctor(doctor)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
@@ -176,26 +181,31 @@ func (h *Handle) EditDoctor(ctx *gin.Context) {
 }
 
 func (h *Handle) QueryDoctor(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	size, _ := strconv.Atoi(ctx.Query("size"))
 	name := ctx.Query("name")
-	res, err := h.UseCase.QueryDoctor(name)
+	res, totalNum, totalPage, err := h.UseCase.QueryDoctor(name, page, size)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
-	ctx.JSON(http.StatusOK, getBasicResp(res))
+	data := make(map[string]interface{}, 0)
+	data["doctorList"] = res
+	data["totalNum"] = totalNum
+	data["totalPage"] = totalPage
+	ctx.JSON(http.StatusOK, getBasicResp(data))
 }
 
 func (h *Handle) GetDrugList(ctx *gin.Context) {
 	page, _ := strconv.Atoi(ctx.Query("page"))
 	size, _ := strconv.Atoi(ctx.Query("size"))
-
-	patientList, totalNum, totalPage, err := h.UseCase.GetDrugList(page, size)
+	drugList, totalNum, totalPage, err := h.UseCase.GetDrugList(page, size)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
 	data := make(map[string]interface{}, 0)
 	data["totalNum"] = totalNum
 	data["totalPage"] = totalPage
-	data["patientList"] = patientList
+	data["drugList"] = drugList
 	ctx.JSON(http.StatusOK, getBasicResp(data))
 }
 
@@ -214,12 +224,12 @@ func (h *Handle) AddDrug(ctx *gin.Context) {
 }
 
 func (h *Handle) DeleteDrug(ctx *gin.Context) {
-	doctor := model.Drug{}
-	err := ctx.Bind(&doctor)
-	if err != nil {
-		fmt.Println(err)
+	id, _ := strconv.Atoi(ctx.Query("id"))
+	doctor := model.Drug{
+		Id: id,
 	}
-	err = h.UseCase.DeleteDrug(doctor)
+
+	err := h.UseCase.DeleteDrug(doctor)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
@@ -240,12 +250,18 @@ func (h *Handle) EditDrug(ctx *gin.Context) {
 }
 
 func (h *Handle) QueryDrug(ctx *gin.Context) {
+	page, _ := strconv.Atoi(ctx.Query("page"))
+	size, _ := strconv.Atoi(ctx.Query("size"))
 	name := ctx.Query("name")
-	res, err := h.UseCase.QueryDrug(name)
+	res, totalNum, totalPage, err := h.UseCase.QueryDrug(name, page, size)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
-	ctx.JSON(http.StatusOK, getBasicResp(res))
+	data := make(map[string]interface{}, 0)
+	data["totalNum"] = totalNum
+	data["totalPage"] = totalPage
+	data["drugList"] = res
+	ctx.JSON(http.StatusOK, getBasicResp(data))
 }
 
 func (h *Handle) GetRegisterList(ctx *gin.Context) {
@@ -259,7 +275,7 @@ func (h *Handle) GetRegisterList(ctx *gin.Context) {
 	data := make(map[string]interface{}, 0)
 	data["totalNum"] = totalNum
 	data["totalPage"] = totalPage
-	data["patientList"] = patientList
+	data["registerList"] = patientList
 	ctx.JSON(http.StatusOK, getBasicResp(data))
 }
 
@@ -278,12 +294,11 @@ func (h *Handle) AddRegister(ctx *gin.Context) {
 }
 
 func (h *Handle) DeleteRegister(ctx *gin.Context) {
-	doctor := model.Register{}
-	err := ctx.Bind(&doctor)
-	if err != nil {
-		fmt.Println(err)
+	id, _ := strconv.Atoi(ctx.Query("id"))
+	register := model.Register{
+		Id: id,
 	}
-	err = h.UseCase.DeleteRegister(doctor)
+	err := h.UseCase.DeleteRegister(register)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
@@ -320,12 +335,11 @@ func (h *Handle) AddPrescription(ctx *gin.Context) {
 }
 
 func (h *Handle) DeletePrescription(ctx *gin.Context) {
-	doctor := model.Prescription{}
-	err := ctx.Bind(&doctor)
-	if err != nil {
-		fmt.Println(err)
+	id, _ := strconv.Atoi(ctx.Query("id"))
+	prescription := model.Prescription{
+		ID: id,
 	}
-	err = h.UseCase.DeletePrescription(doctor)
+	err := h.UseCase.DeletePrescription(prescription)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}

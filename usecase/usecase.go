@@ -28,7 +28,7 @@ type UseCase interface {
 	// 编辑患者
 	EditPatient(data model.Patient) (err error)
 	// 查询患者
-	QueryPatient(name string) (patient *model.Patient, err error)
+	QueryPatient(name string) (patients []*model.Patient, err error)
 
 	// 插入医生
 	AddDoctor(data model.Doctor) (err error)
@@ -37,7 +37,7 @@ type UseCase interface {
 	// 编辑医生
 	EditDoctor(data model.Doctor) (err error)
 	// 查询医生
-	QueryDoctor(name string) (doctor *model.Doctor, err error)
+	QueryDoctor(name string, page, size int) (doctors []*model.Doctor, totalNum int, totalPage int, err error)
 	// 获取医生列表
 	GetDoctorList(page int, size int) (doctors []*model.Doctor, totalNum int, totalPage int, err error)
 
@@ -48,7 +48,7 @@ type UseCase interface {
 	// 编辑药品
 	EditDrug(data model.Drug) (err error)
 	// 查询药品
-	QueryDrug(name string) (drug *model.Drug, err error)
+	QueryDrug(name string, page, size int) (drugs []*model.Drug, totalNum, totalPage int, err error)
 	// 获取药品列表
 	GetDrugList(page int, size int) (drugs []*model.Drug, totalNum int, totalPage int, err error)
 
@@ -57,7 +57,7 @@ type UseCase interface {
 	// 删除挂号
 	DeleteRegister(data model.Register) (err error)
 	// 获取挂号列表
-	GetRegisterList(page int, size int) (registers []*model.Register, totalNum int, totalPage int, err error)
+	GetRegisterList(page int, size int) (result []*model.RegisterResult, totalNum int, totalPage int, err error)
 
 	// 插入药品
 	AddPrescription(data model.Prescription) (err error)
@@ -111,7 +111,7 @@ func (u *userCase) EditPatient(data model.Patient) (err error) {
 	return u.Repo.UpdatePatientByID(data)
 }
 
-func (u *userCase) QueryPatient(name string) (patient *model.Patient, err error) {
+func (u *userCase) QueryPatient(name string) (patients []*model.Patient, err error) {
 	return u.Repo.QueryPatientByName(name)
 }
 
@@ -133,8 +133,10 @@ func (u *userCase) EditDoctor(data model.Doctor) (err error) {
 	return u.Repo.UpdateDoctorByID(data)
 }
 
-func (u *userCase) QueryDoctor(name string) (doctor *model.Doctor, err error) {
-	return u.Repo.QueryDoctorByName(name)
+func (u *userCase) QueryDoctor(name string, page, size int) (doctors []*model.Doctor, totalNum int, totalPage int, err error) {
+	totalNum, totalPage = u.Repo.CountDoctorByName(name, size)
+	doctors, err = u.Repo.QueryDoctorByName(name, page, size)
+	return
 }
 
 func (u *userCase) GetDrugList(page int, size int) (drugs []*model.Drug, totalNum int, totalPage int, err error) {
@@ -155,13 +157,15 @@ func (u *userCase) EditDrug(data model.Drug) (err error) {
 	return u.Repo.UpdateDrugByID(data)
 }
 
-func (u *userCase) QueryDrug(name string) (drug *model.Drug, err error) {
-	return u.Repo.QueryDrugByName(name)
+func (u *userCase) QueryDrug(name string, page, size int) (drugs []*model.Drug, totalNum, totalPage int, err error) {
+	totalNum, totalPage = u.Repo.CountRegisterList(size)
+	drugs, err = u.Repo.QueryDrugByName(name, page, size)
+	return
 }
 
-func (u *userCase) GetRegisterList(page int, size int) (registers []*model.Register, totalNum int, totalPage int, err error) {
+func (u *userCase) GetRegisterList(page int, size int) (result []*model.RegisterResult, totalNum int, totalPage int, err error) {
 	totalNum, totalPage = u.Repo.CountRegisterList(size)
-	registers, err = u.Repo.QueryRegisterList(page, size)
+	result, err = u.Repo.QueryRegisterList(page, size)
 	return
 }
 

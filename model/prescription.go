@@ -3,9 +3,9 @@ package model
 import "time"
 
 type Prescription struct {
-	ID        uint
-	PatientID uint
-	DrugID    uint
+	ID        int
+	PatientID int
+	DrugID    int
 	CreateAt  time.Time
 	UpdateAt  time.Time
 }

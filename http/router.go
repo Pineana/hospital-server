@@ -23,9 +23,10 @@ func SetBaseRouter(engine *gin.Engine, handle *Handle) {
 	r.DELETE("/delete-doctor", handle.DeleteDoctor)
 	r.GET("/get-doctor-list", handle.GetDoctorList)
 
-	r.GET("/query-register-list", handle.GetRegisterList)
+	r.GET("/get-register-list", handle.GetRegisterList)
 	r.GET("/query-register", handle.AddRegister)
 	r.POST("/add-register", handle.AddRegister)
+	r.DELETE("/delete-register", handle.DeleteRegister)
 
 	r.GET("/query-drug", handle.QueryDrug)
 	r.POST("/add-drug", handle.AddDrug)
