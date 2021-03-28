@@ -34,7 +34,9 @@ func (h *Handle) UserLogin(ctx *gin.Context) {
 	if ok {
 		userLoginResp.IsAllow = true
 		ctx.JSON(http.StatusOK, getBasicResp(userLoginResp))
+		return
 	}
+	ctx.JSON(http.StatusBadRequest, nil)
 }
 
 // 用户注册
@@ -303,6 +305,20 @@ func (h *Handle) DeleteRegister(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, nil)
 	}
 	ctx.JSON(http.StatusOK, nil)
+}
+
+func (h *Handle) QueryRegister(ctx *gin.Context) {
+	id, _ := strconv.Atoi(ctx.Query("id"))
+	res, beforeNum, err := h.UseCase.QueryRegister(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, nil)
+	}
+	data := make(map[string]interface{}, 0)
+	data["totalNum"] = 1
+	data["totalPage"] = 1
+	data["beforeNum"] = beforeNum
+	data["registerList"] = res
+	ctx.JSON(http.StatusOK, getBasicResp(data))
 }
 
 func (h *Handle) GetPrescriptionList(ctx *gin.Context) {

@@ -194,9 +194,19 @@ func (r *repository) UpdateRegisterByID(register Register) (err error) {
 	return
 }
 
-func (r *repository) QueryRegisterByID(id int64) (register *Register, err error) {
-	result := r.DB.First(register, id)
-	if result.Error != nil {
+func (r *repository) CountRegisterBeforeID(id int) (beforeNum int, err error) {
+	var count int64
+	err = r.DB.Table("registers").Select("count(*)").Where("id < ?", id).Count(&count).Error
+	if err != nil {
+		fmt.Println("CountRegisterBeforeID", err)
+		return 0, err
+	}
+	return int(count), nil
+}
+
+func (r *repository) QueryRegisterByID(id int) (register *RegisterResult, err error) {
+	res := r.DB.Table("registers").Select("registers.id,patients.name as patient_name,patients.year as patient_year,patients.phone as patient_phone,patients.sex as patient_sex,price,CONCAT(doctors.name,'--',doctors.department) as doctor_name").Joins("LEFT JOIN patients ON patients.id = registers.patient_id").Joins("LEFT JOIN doctors ON doctors.id = registers.doctor_id").Where("registers.id = ?", id).Find(&register)
+	if res.Error != nil {
 		fmt.Println("QueryRegisterByID", err)
 		return nil, err
 	}

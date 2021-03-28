@@ -58,6 +58,8 @@ type UseCase interface {
 	DeleteRegister(data model.Register) (err error)
 	// 获取挂号列表
 	GetRegisterList(page int, size int) (result []*model.RegisterResult, totalNum int, totalPage int, err error)
+	// 查询挂号
+	QueryRegister(id int) (registers *model.RegisterResult, beforeNum int, err error)
 
 	// 插入药品
 	AddPrescription(data model.Prescription) (err error)
@@ -175,6 +177,12 @@ func (u *userCase) AddRegister(data model.Register) (err error) {
 
 func (u *userCase) DeleteRegister(data model.Register) (err error) {
 	return u.Repo.DeleteRegisterByID(data)
+}
+
+func (u *userCase) QueryRegister(id int) (register *model.RegisterResult, beforeNum int, err error) {
+	beforeNum, _ = u.Repo.CountRegisterBeforeID(id)
+	register, err = u.Repo.QueryRegisterByID(id)
+	return
 }
 
 func (u *userCase) GetPrescriptionList(page int, size int) (prescriptions []*model.Prescription, totalNum int, totalPage int, err error) {

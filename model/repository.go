@@ -31,7 +31,8 @@ type Repository interface {
 
 	InsertRegister(register Register) (err error)
 	DeleteRegisterByID(register Register) (err error)
-	QueryRegisterByID(id int64) (register *Register, err error)
+	QueryRegisterByID(id int) (register *RegisterResult, err error)
+	CountRegisterBeforeID(id int) (beforeNum int, err error)
 	UpdateRegisterByID(register Register) (err error)
 	QueryRegisterList(page int, size int) (result []*RegisterResult, err error)
 	CountRegisterList(size int) (totalNum int, totalPage int)
